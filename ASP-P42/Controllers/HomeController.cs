@@ -6,6 +6,11 @@ namespace ASP_P42.Controllers
 {
     public class HomeController : Controller
     {
+        public IActionResult Razor()
+        {
+            return View();
+        }
+
         public IActionResult Index()
         {
             return View();

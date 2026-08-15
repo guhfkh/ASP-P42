@@ -1,11 +1,23 @@
 using ASP_P42.Models;
+using ASP_P42.Services.Hash;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
 namespace ASP_P42.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController(IHashServices hashService) : Controller
     {
+        private readonly IHashServices _hashService = hashService;
+
+        public IActionResult IoC()
+        {
+            String digest = _hashService.Digest("geralt roger");
+            ViewBag.Hash = _hashService.GetHashCode();
+            ViewData["digest"] = digest;
+
+            return View();
+        }
+
         public IActionResult Razor()
         {
             return View();

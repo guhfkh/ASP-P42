@@ -1,3 +1,5 @@
+using ASP_P42.Services.Hash;
+
 namespace ASP_P42
 {
     public class Program
@@ -8,6 +10,8 @@ namespace ASP_P42
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+
+            builder.Services.AddHash();
 
             var app = builder.Build();
 

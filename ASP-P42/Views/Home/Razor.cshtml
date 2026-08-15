@@ -1,6 +1,43 @@
 ﻿@{
     ViewData["Title"] = "Razor";
+
+    var products = new[]
+    {
+        new { Name = "Ноутбук", Price = 32000 },
+        new { Name = "Миша", Price = 850 },
+        new { Name = "Клавіатура", Price = 1500 },
+        new { Name = "Монітор", Price = 7800 },
+        new { Name = "Навушники", Price = 2100 }
+    };
 }
+
+<style>
+    table {
+        width: 60%;
+        margin: 20px auto;
+        border-collapse: collapse;
+        font-family: Arial;
+    }
+
+    th, td {
+        border: 1px solid #333;
+        padding: 10px;
+        text-align: center;
+    }
+
+    th {
+        background-color: #444;
+        color: white;
+    }
+
+    .even {
+        background-color: #f2f2f2;
+    }
+
+    .odd {
+        background-color: #ffffff;
+    }
+</style>
 
 <div class="text-center">
     <h1 class="display-4">Синтаксис рушія Razor</h1>
@@ -11,4 +48,24 @@
     по собі стає службовим і для виведення має бути
     замінений на HTML-сутність &amp;commat;
 </p>
+
 <h2 class="display-5">Вирази</h2>
+
+<h3 class="text-center">Таблиця товарів</h3>
+
+<table>
+    <tr>
+        <th>№</th>
+        <th>Назва товару</th>
+        <th>Ціна (грн)</th>
+    </tr>
+
+    @for (int i = 0; i < products.Length; i++)
+    {
+        <tr class="@(i % 2 == 0 ? "even" : "odd")">
+            <td>@(i + 1)</td>
+            <td>@products[i].Name</td>
+            <td>₴@products[i].Price</td>
+        </tr>
+    }
+</table>

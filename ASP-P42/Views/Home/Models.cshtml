@@ -1,0 +1,205 @@
+﻿@model ASP_P42.Models.Home.Models.HomeModelsViewModel
+
+@{
+    ViewData["Title"] = "Models";
+}
+
+<div class="text-center">
+    <h1 class="display-4">@Model.PageTitle</h1>
+</div>
+
+<p>
+    @Model.Intro
+</p>
+
+<p>
+    @Model.ClassificationHeader
+</p>
+
+<ul>
+    @foreach (var item in Model.ClassificationList)
+    {
+        <li>@item</li>
+    }
+</ul>
+
+<p>
+    @Model.ExampleHeader
+</p>
+
+<ul>
+    @foreach (var item in Model.ExampleList)
+    {
+        <li>@item</li>
+    }
+</ul>
+
+<hr />
+
+<h2>Форма</h2>
+
+<form asp-action="ModelsForm" method="post">
+
+    <!-- Login -->
+    <div>
+        <label for="user-login">Login:</label>
+        <input id="user-login"
+               name="user-login"
+               type="text"
+               placeholder="Введите логин" />
+    </div>
+
+    <br />
+
+    <!-- Password -->
+    <div>
+        <label for="user-password">Password:</label>
+        <input id="user-password"
+               name="user-password"
+               type="password"
+               placeholder="Введите пароль" />
+    </div>
+
+    <br />
+
+    <!-- Checkbox -->
+    <div>
+        <label>
+            <input name="remember-me"
+                   type="checkbox"
+                   value="true" />
+            Запомнить меня
+        </label>
+    </div>
+
+    <br />
+
+    <!-- Radio buttons -->
+    <div>
+        <p>Пол:</p>
+
+        <label>
+            <input type="radio"
+                   name="gender"
+                   value="Male" />
+            Мужской
+        </label>
+
+        <label>
+            <input type="radio"
+                   name="gender"
+                   value="Female" />
+            Женский
+        </label>
+    </div>
+
+    <br />
+
+    <!-- Date -->
+    <div>
+        <label for="birth-date">
+            Дата рождения:
+        </label>
+
+        <input id="birth-date"
+               name="birth-date"
+               type="date" />
+    </div>
+
+    <br />
+
+    <!-- Color -->
+    <div>
+        <label for="favorite-color">
+            Любимый цвет:
+        </label>
+
+        <input id="favorite-color"
+               name="favorite-color"
+               type="color"
+               value="#000000" />
+    </div>
+
+    <br />
+
+    <!-- Number -->
+    <div>
+        <label for="age">
+            Возраст:
+        </label>
+
+        <input id="age"
+               name="age"
+               type="number"
+               min="1"
+               max="120"
+               placeholder="Введите возраст" />
+    </div>
+
+    <br />
+
+    <!-- Range -->
+    <div>
+        <label for="rating">
+            Оценка:
+        </label>
+
+        <input id="rating"
+               name="rating"
+               type="range"
+               min="1"
+               max="10"
+               value="5" />
+    </div>
+
+    <br />
+
+    <!-- Email -->
+    <div>
+        <label for="email">
+            Email:
+        </label>
+
+        <input id="email"
+               name="email"
+               type="email"
+               placeholder="example@mail.com" />
+    </div>
+
+    <br />
+
+    <!-- Phone -->
+    <div>
+        <label for="phone">
+            Телефон:
+        </label>
+
+        <input id="phone"
+               name="phone"
+               type="tel"
+               placeholder="+380..." />
+    </div>
+
+    <br />
+
+    <!-- Select -->
+    <div>
+        <label for="country">
+            Страна:
+        </label>
+
+        <select id="country" name="country">
+            <option value="Ukraine">Украина</option>
+            <option value="Poland">Польша</option>
+            <option value="Germany">Германия</option>
+            <option value="USA">США</option>
+        </select>
+    </div>
+
+    <br />
+
+    <button type="submit">
+        GO
+    </button>
+
+</form>

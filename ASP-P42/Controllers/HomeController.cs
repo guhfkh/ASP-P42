@@ -1,21 +1,58 @@
 using ASP_P42.Models;
+using ASP_P42.Models.Home.Models;
 using ASP_P42.Services.Hash;
+using ASP_P42.Services.Kdf;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
 namespace ASP_P42.Controllers
 {
-    public class HomeController(IHashServices hashService) : Controller
+    public class HomeController(
+        IHashServices hashService,
+        IKdfService kdfService 
+        ) : Controller
     {
         private readonly IHashServices _hashService = hashService;
+        private readonly IKdfService _kdfService = kdfService;
 
         public IActionResult IoC()
         {
-            String digest = _hashService.Digest("geralt roger");
+            String digest = _kdfService.Dk("96DCBBBA", "96DCBBBA-9AEE-44A2-8835-72DFE4E1A710");
             ViewBag.Hash = _hashService.GetHashCode();
             ViewData["digest"] = digest;
 
             return View();
+        }
+
+        public IActionResult Models(String? id)
+        {
+            HomeModelsViewModel viewModel = new()
+            {
+                PageTitle = "Models",
+                Intro = "Модель (у MVC) – архітектурна частина проєкту, яка відповідає за взаємодію з даними.\r\n    Модель (в ASP) – клас (об'єкт), призначений для передачі даних (DTO – Data Transfer Object, Entity)",
+                ClassificationHeader = "Розрізняють декілька типів моделей за призначенням:",
+                ClassificationList = [
+                    "Модель представлення (ViewModel або PageModel) – дані, з яких будується сторінка (або її частина – представлення)",
+                    "Модель форми (FormModel) – дані, що заповнюються користувачем на сторінці і передаються на обробку.",
+                    "Модель даних (DTO – Data Transfer Object, Entity) – дані, що зберігаються на постійній основі, частіше за все у БД.",
+                    ],
+                ExampleHeader = "Наприклад, для моделі \"користувач\":",
+                ExampleList = [
+                    "Модель форми (реєстрація) – логін, пароль, повтор пароля, ...",
+                    "Модель даних (у БД) – логін, DK(хеш паролю), сіль, ..., дата створення",
+                    "Модель представлення (профіль або кабінет) – логін, ..., дата створення (паролів немає)",
+                    ],
+
+
+            };
+
+            return id == "json" ? Json(View(viewModel)) : View(viewModel);
+        }
+
+        [HttpPost]
+        public IActionResult ModelsForm(HomeModelsFormModel formModel)
+        {
+            return View(formModel);
         }
 
         public IActionResult Razor()

@@ -1,4 +1,7 @@
+using ASP_P42.Data;
 using ASP_P42.Services.Hash;
+using ASP_P42.Services.Kdf;
+using Microsoft.EntityFrameworkCore;
 
 namespace ASP_P42
 {
@@ -12,6 +15,13 @@ namespace ASP_P42
             builder.Services.AddControllersWithViews();
 
             builder.Services.AddHash();
+            builder.Services.AddKdf();
+
+            builder.Services.AddDbContext<DataContext>(options =>
+                options.UseSqlServer(
+                        builder.Configuration.GetConnectionString("LocalDB")
+                    )
+            );
 
             var app = builder.Build();
 

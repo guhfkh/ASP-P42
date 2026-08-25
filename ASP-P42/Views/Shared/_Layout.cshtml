@@ -36,7 +36,16 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="IoC">IoC</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Models">Model</a>
+                        </li>
                     </ul>
+                    
+                
+                <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#authModal">
+                    Вхід
+                </button>
+                    
                 </div>
             </div>
         </nav>
@@ -52,6 +61,43 @@
             &copy; 2026 - ASP-P42 - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
+
+    <!-- Modal -->
+    <div class="modal fade" id="authModal" tabindex="-1" aria-labelledby="authModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="authModalLabel">Автентифікація</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="auth-form">
+                        <div class="mb-3">
+                            <label for="auth-login"
+                                   class="form-label">Логін</label>
+                            <input name="auth-login" type="text" class="form-control"
+                                   id="auth-login" placeholder="Логін">
+                        </div>
+                        <div class="mb-3">
+                            <label for="auth-password"
+                                   class="form-label">Пороль</label>
+                            <input name="auth-password" type="password" class="form-control"
+                                   id="auth-password" placeholder="********">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <div id="auth-modal-error"
+                        class="alert alert-danger py-2 flex-grow-1 text-center"
+                        style="visibility:hidden"
+                        role="alert"></div>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Скасувати</button>
+                    <button type="submit" form="auth-form" class="btn btn-primary">Вхід</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

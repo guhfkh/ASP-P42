@@ -70,7 +70,7 @@ namespace ASP_P42.Data
                         RoleId = Guid.Parse("ACB35324-7B84-4E3B-9A26-00AAD72A600C"),
                         Login = "Admin",
                         Salt = "96DCBBBA-9AEE-44A2-8835-72DFE4E1A710",
-                        Dk = "",
+                        Dk = "FCB57CECE720632FDBB68958CF953E46",
                     }
                     ]);
             

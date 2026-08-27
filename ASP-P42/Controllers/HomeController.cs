@@ -2,6 +2,7 @@ using ASP_P42.Models;
 using ASP_P42.Models.Home.Models;
 using ASP_P42.Services.Hash;
 using ASP_P42.Services.Kdf;
+using ASP_P42.Services.Time;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
@@ -9,17 +10,27 @@ namespace ASP_P42.Controllers
 {
     public class HomeController(
         IHashServices hashService,
-        IKdfService kdfService 
+        IKdfService kdfService,
+        ITimeService timeService
         ) : Controller
     {
         private readonly IHashServices _hashService = hashService;
         private readonly IKdfService _kdfService = kdfService;
+        private readonly ITimeService _timeService = timeService;
+
 
         public IActionResult IoC()
         {
             String digest = _kdfService.Dk("96DCBBBA", "96DCBBBA-9AEE-44A2-8835-72DFE4E1A710");
             ViewBag.Hash = _hashService.GetHashCode();
             ViewData["digest"] = digest;
+
+            return View();
+        }
+        public IActionResult Time()
+        {
+            ViewData["Timestamp"] = _timeService.GetTimestamp();
+            ViewData["ServiceHash"] = _timeService.GetHashCode();
 
             return View();
         }

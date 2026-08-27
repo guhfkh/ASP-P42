@@ -48,11 +48,10 @@ document.addEventListener("submit", e => {
             }
         }).then(r => {
             if (r.ok) {
-                return r.json();
+                window.location.reload();
             } else {
                 return r.text();
             }
-            r.json()
         }).then(console.log);
 
         console.log(credentials);

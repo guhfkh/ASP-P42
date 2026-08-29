@@ -1,4 +1,25 @@
-﻿<!DOCTYPE html>
+﻿@using System.Security.Claims
+@{
+    // UserAccess? userAccess = null;
+    // string authKey = "userAccessId";
+
+    // if (Context.Items.Keys.Contains(authKey))
+    // {
+    //     userAccess = (UserAccess)Context.Items[authKey]!;
+    // }
+
+    bool isAuthenticated = Context.User.Identity?.IsAuthenticated ?? false;
+
+    string? userName = isAuthenticated ?
+    Context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value :
+    null;
+
+    string? userEmail = isAuthenticated ?
+    Context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value :
+    null;
+}
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -44,10 +65,23 @@
                         </li>
                     </ul>
                     
-                
-                <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#authModal">
-                    Вхід
-                </button>
+                    @if (!isAuthenticated)
+                    {
+                        <button type="button"
+                            class="btn btn-outline-secondary"
+                                data-bs-toggle="modal"
+                                data-bs-target="#authModal">
+                            Вхід
+                        </button>
+                    }
+                    else
+                    {
+                        <a class="btn btn-outline-danger"
+                        title="@userName"
+                           href="?logout">
+                            Вихід
+                        </a>
+                    }
                     
                 </div>
             </div>
@@ -94,9 +128,17 @@
                         class="alert alert-danger py-2 flex-grow-1 text-center"
                         style="visibility:hidden"
                         role="alert"></div>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Скасувати</button>
-                    <button type="submit" form="auth-form" class="btn btn-primary">Вхід</button>
-                </div>
+                    <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                        Скасувати
+                    </button>
+                    <button type="submit"
+                            form="auth-form"
+                            class="btn btn-primary">
+                            Вхід
+                        </button>
+                    </div>
             </div>
         </div>
     </div>

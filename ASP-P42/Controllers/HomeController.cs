@@ -71,6 +71,11 @@ namespace ASP_P42.Controllers
             return View();
         }
 
+        public IActionResult EFDatabase()
+        {
+            return View();
+        }
+
         public IActionResult Index()
         {
             return View();

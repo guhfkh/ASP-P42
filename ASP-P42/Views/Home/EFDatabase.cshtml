@@ -1,0 +1,197 @@
+﻿@{
+    ViewData["Title"] = "Entity Framework та база даних";
+}
+
+<div class="container">
+    <h1>Долучення бази даних з Entity Framework до ASP.NET</h1>
+
+    ```
+    <h2>1. Термінологія баз даних</h2>
+
+    <dl>
+        <dt><strong>База даних (БД)</strong></dt>
+        <dd>
+            Організована сукупність даних, призначена для зберігання,
+            пошуку та обробки інформації.
+        </dd>
+
+        <dt><strong>СУБД</strong></dt>
+        <dd>
+            Система управління базами даних — програмне забезпечення
+            для створення, зберігання та обробки даних.
+        </dd>
+
+        <dt><strong>Таблиця</strong></dt>
+        <dd>
+            Структура бази даних, яка складається з рядків і стовпців.
+        </dd>
+
+        <dt><strong>Запис</strong></dt>
+        <dd>
+            Один рядок таблиці, який містить дані про певний об'єкт.
+        </dd>
+
+        <dt><strong>Поле</strong></dt>
+        <dd>
+            Стовпець таблиці, який описує окрему властивість об'єкта.
+        </dd>
+
+        <dt><strong>Первинний ключ (Primary Key)</strong></dt>
+        <dd>
+            Поле або набір полів, які однозначно ідентифікують запис у таблиці.
+        </dd>
+
+        <dt><strong>Зовнішній ключ (Foreign Key)</strong></dt>
+        <dd>
+            Поле, яке використовується для встановлення зв'язку між таблицями.
+        </dd>
+
+        <dt><strong>ORM</strong></dt>
+        <dd>
+            Object-Relational Mapping — технологія, яка дозволяє працювати
+            з базою даних через об'єкти програмного коду.
+        </dd>
+
+        <dt><strong>Entity Framework Core</strong></dt>
+        <dd>
+            ORM-фреймворк для .NET, який дозволяє взаємодіяти з базою даних
+            за допомогою C#-класів та об'єктів.
+        </dd>
+
+        <dt><strong>Міграція (Migration)</strong></dt>
+        <dd>
+            Механізм Entity Framework Core, який дозволяє створювати
+            та змінювати структуру бази даних відповідно до моделей.
+        </dd>
+    </dl>
+
+    <h2>2. Етапи підключення бази даних</h2>
+
+    <ol>
+        <li>Створити ASP.NET Core MVC проєкт.</li>
+        <li>Встановити необхідні пакети Entity Framework Core.</li>
+        <li>Створити модель даних.</li>
+        <li>Створити клас <code>DbContext</code>.</li>
+        <li>Додати рядок підключення до бази даних.</li>
+        <li>Зареєструвати <code>DbContext</code> у <code>Program.cs</code>.</li>
+        <li>Створити міграцію.</li>
+        <li>Застосувати міграцію до бази даних.</li>
+        <li>Використовувати Entity Framework для роботи з даними.</li>
+    </ol>
+
+    <h2>3. Створення моделі</h2>
+
+    <p>
+        Спочатку створюється C#-клас, який описує сутність,
+        що буде зберігатися в базі даних.
+    </p>
+
+    <pre><code>public class Student
+```
+
+{
+public Guid Id { get; set; }
+
+```
+public string Name { get; set; }
+
+public string Email { get; set; }
+
+public int Age { get; set; }
+```
+
+}</code></pre>
+
+    ```
+    <p>
+        У цьому прикладі <code>Id</code> є первинним ключем,
+        а інші властивості описують дані студента.
+    </p>
+
+    <h2>4. Створення DbContext</h2>
+
+    <p>
+        Для взаємодії ASP.NET Core з базою даних створюється клас,
+        успадкований від <code>DbContext</code>.
+    </p>
+
+    <pre><code>public class DataContext : DbContext
+```
+
+{
+public DataContext(
+DbContextOptions<DataContext> options)
+: base(options)
+{
+}
+
+```
+public DbSet&lt;Student&gt; Students { get; set; }
+```
+
+}</code></pre>
+
+    ```
+    <h2>5. Рядок підключення</h2>
+
+    <p>
+        У файлі <code>appsettings.json</code> вказується рядок
+        підключення до SQL Server:
+    </p>
+
+    <pre><code>{
+```
+
+"ConnectionStrings": {
+"DefaultConnection":
+"Server=(localdb)\MSSQLLocalDB;Database=SchoolDb;Trusted_Connection=True;"
+}
+}</code></pre>
+
+    ```
+    <h2>6. Реєстрація DbContext</h2>
+
+    <p>
+        У файлі <code>Program.cs</code> необхідно зареєструвати
+        контекст бази даних:
+    </p>
+
+    <pre><code>builder.Services.AddDbContext<DataContext>(options =>
+                options.UseSqlServer(
+                        builder.Configuration.GetConnectionString("LocalDB")
+                    )
+            );</code></pre>
+
+    <h2>7. Створення міграції</h2>
+
+    <p>
+        Після створення моделі та налаштування контексту можна
+        створити міграцію за допомогою Package Manager Console:
+    </p>
+
+    <pre><code>Add-Migration InitialCreate</code></pre>
+
+    <p>
+        Після цього міграція застосовується до бази даних:
+    </p>
+
+    <pre><code>Update-Database</code></pre>
+
+    <h2>8. Робота з даними</h2>
+
+    <p>
+        Після підключення Entity Framework дозволяє отримувати,
+        додавати, змінювати та видаляти дані за допомогою C#-об'єктів.
+    </p>
+
+    <h2>Висновок</h2>
+
+    <p>
+        Entity Framework Core спрощує роботу ASP.NET Core-проєкту
+        з базою даних. Для підключення необхідно створити модель,
+        DbContext, налаштувати рядок підключення, зареєструвати
+        контекст та виконати міграцію.
+    </p>
+    ```
+
+</div>

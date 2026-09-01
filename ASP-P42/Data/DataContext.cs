@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using ASP_P42.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace ASP_P42.Data
 {
@@ -7,6 +8,8 @@ namespace ASP_P42.Data
         public DbSet<Entities.UserData> UserData { get; set; } 
         public DbSet<Entities.UserRole> UserRoles { get; set; } 
         public DbSet<Entities.UserAccess> UserAccesses { get; set; }
+
+        public DbSet<AuthJournal> AuthJournals { get; set; }
 
         public DataContext(DbContextOptions options) : base(options)
         {

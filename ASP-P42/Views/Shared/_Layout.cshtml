@@ -17,6 +17,10 @@
     string? userEmail = isAuthenticated ?
     Context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value :
     null;
+
+    string? userLogin = isAuthenticated ?
+    Context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value :
+    null;
 }
 
 <!DOCTYPE html>
@@ -84,8 +88,12 @@
                            href="?logout">
                             Вихід
                         </a>
+
+                        <div class="user-avatar"
+                             title="@userLogin (@userEmail)">
+                            @userLogin!.Substring(0, 1).ToUpper()
+                        </div>
                     }
-                    
                 </div>
             </div>
         </nav>

@@ -6,7 +6,7 @@
         public string FullName { get; set; } = null!;
         public string Email { get; set; } = null!;
         public string? Phone { get; set; } = null!;
-        public DateTime Britdate { get; set; }
+        public DateTime Birthdate { get; set; }
         public DateTime RegisteredAt { get; set; }
         public DateTime? DeleteAt { get; set; }
 

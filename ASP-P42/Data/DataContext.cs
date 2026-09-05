@@ -59,7 +59,7 @@ namespace ASP_P42.Data
                     new() {
                         Id = Guid.Parse("190052CA-F844-498A-A05F-1D4BA2ADC0E8"),
                         FullName = "Admin system",
-                        Britdate = DateTime.UnixEpoch,
+                        Birthdate = DateTime.UnixEpoch,
                         Email = "CHANGE@ME",
                         Phone = "CHANGE_ME",
                         RegisteredAt = DateTime.UnixEpoch,

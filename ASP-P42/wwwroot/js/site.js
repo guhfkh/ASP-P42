@@ -21,10 +21,14 @@ document.addEventListener("submit", e => {
 
         let errorMessage = "";
         if (login.trim().length === 0) {
-            errorMessage += "Логін не може бути порожнім.\n" 
+            errorMessage += "Логін не може бути порожнім.\n"
         }
+        if (login.includes(':')) {
+            errorMessage += "Логін не може містити символ ':'.\n";
+        }
+
         if (password.trim().length === 0) {
-            errorMessage += "Пороль не може бути порожнім.\n"
+            errorMessage += "Пароль не може бути порожнім.\n"
         }
 
         const err = document.getElementById("auth-modal-error");
@@ -46,13 +50,20 @@ document.addEventListener("submit", e => {
             headers: {
                 "Authorization": "Basic " + credentials,
             }
-        }).then(r => {
+        }).then(async r => {
             if (r.ok) {
-                window.location.reload();
-            } else {
-                return r.text();
+                window.location.reload(); return;
             }
-        }).then(console.log);
+            const message = await r.text();
+            err.innerText = "Помилка сервера: " + message;
+            err.style.visibility = "visible";
+
+        }).catch(error => {
+            err.innerText = "Технічна помилка: " + error;
+            err.style.visibility = "visible";
+        });
+
+         
 
         console.log(credentials);
     }

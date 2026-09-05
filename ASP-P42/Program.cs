@@ -35,6 +35,15 @@ namespace ASP_P42
                 options.Cookie.IsEssential = true;
             });
 
+            // налаштування CORS
+            builder.Services.AddCors(options =>
+            options.AddDefaultPolicy(policy =>
+                    policy.AllowAnyOrigin()
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                )
+            );
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -47,6 +56,8 @@ namespace ASP_P42
 
             app.UseHttpsRedirection();
             app.UseRouting();
+
+            app.UseCors();
 
             app.UseAuthorization();
             app.MapStaticAssets();

@@ -78,6 +78,7 @@ namespace ASP_P42.Controllers
 
         public IActionResult Index()
         {
+            ViewBag.ItemValue = HttpContext.Items["ItemKey"];
             return View();
         }
 

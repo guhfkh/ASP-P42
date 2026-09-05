@@ -9,9 +9,9 @@ namespace ASP_P42.Data
         public DbSet<Entities.UserRole> UserRoles { get; set; } 
         public DbSet<Entities.UserAccess> UserAccesses { get; set; }
 
-        public DbSet<Entities.ProductGroup> ProductGroup { get; set; }
-        public DbSet<Entities.Product> Product { get; set; }
-        public DbSet<Entities.ProductVersion> ProductVersion { get; set; }
+        public DbSet<Entities.ProductGroup> ProductGroups { get; set; }
+        public DbSet<Entities.Product> Products { get; set; }
+        public DbSet<Entities.ProductVersion> ProductVersions { get; set; }
 
         public DbSet<AuthJournal> AuthJournals { get; set; }
 

@@ -10,7 +10,7 @@ namespace ASP_P42.Data.Entities
 
         [Column(TypeName = "DECIMAL(18,2)")]
         public decimal Price { get; set; }
-        public decimal Stock { get; set; } = 1;
+        public int Stock { get; set; } = 1;
         public string Slug { get; set; } = null!;
         public string ImageUrl { get; set; } = null!;
         public int IsHidden { get; set; } = 0;

@@ -9,5 +9,9 @@
         public string Slug { get; set; } = null!;
         public string ImageUrl { get; set; } = null!;
         public int IsHidden { get; set; } = 0;
+
+        public ICollection<Product> Products { get; set; } = [];
+        public ProductGroup? ParentGroup { get; set; }
+        public ICollection<ProductGroup> Children { get; set; } = [];
     }
 }

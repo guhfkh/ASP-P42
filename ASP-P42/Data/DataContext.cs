@@ -9,6 +9,10 @@ namespace ASP_P42.Data
         public DbSet<Entities.UserRole> UserRoles { get; set; } 
         public DbSet<Entities.UserAccess> UserAccesses { get; set; }
 
+        public DbSet<Entities.ProductGroup> ProductGroup { get; set; }
+        public DbSet<Entities.Product> Product { get; set; }
+        public DbSet<Entities.ProductVersion> ProductVersion { get; set; }
+
         public DbSet<AuthJournal> AuthJournals { get; set; }
 
         public DataContext(DbContextOptions options) : base(options)
@@ -76,7 +80,35 @@ namespace ASP_P42.Data
                         Dk = "FCB57CECE720632FDBB68958CF953E46",
                     }
                     ]);
-            
+
+
+            modelBuilder.Entity<Entities.ProductGroup>()
+                .HasIndex(p => p.Slug)
+                .IsUnique();
+
+            modelBuilder.Entity<Entities.Product>()
+                .HasIndex(p => p.Slug)
+                .IsUnique();
+
+            modelBuilder.Entity<Entities.ProductVersion>()
+                .HasIndex(p => p.Slug)
+                .IsUnique();
+
+            modelBuilder.Entity<Entities.Product>()
+                .HasOne(p => p.Group)
+                .WithMany(g => g.Products)
+                .HasForeignKey(p => p.GroupId);
+
+            modelBuilder.Entity<Entities.ProductVersion>()
+                .HasOne(p => p.Product)
+                .WithMany(g => g.Versions);
+
+            modelBuilder.Entity<Entities.ProductGroup>()
+               .HasOne(p => p.ParentGroup)
+               .WithMany(g => g.Children)
+               .HasForeignKey(p => p.ParentId);
+
+
         }
     }
 }

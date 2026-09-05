@@ -6,7 +6,6 @@ using ASP_P42.Services.Time;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Data;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;

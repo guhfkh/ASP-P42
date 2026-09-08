@@ -127,7 +127,7 @@ namespace ASP_P42.Controllers
                 Phone = formModel.Phone,
                 RegisteredAt = DateTime.Now,
                 Birthdate = default,
-            });
+            }); 
 
             string salt = Guid.NewGuid().ToString();
             _dataContext.UserAccesses.Add(new()

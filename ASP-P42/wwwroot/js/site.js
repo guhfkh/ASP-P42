@@ -14,6 +14,17 @@
 document.addEventListener("submit", e => {
     const form = e.target;
     if (form.id == 'auth-form') {
+       
+
+
+
+        console.log(credentials);
+    }
+});
+
+document.addEventListener('submit', e => {
+    const form = e.target;
+    if (form.id == 'auth-form') {
         e.preventDefault()
         const formData = new FormData(form);
         const login = formData.get("auth-login")
@@ -62,9 +73,18 @@ document.addEventListener("submit", e => {
             err.innerText = "Технічна помилка: " + error;
             err.style.visibility = "visible";
         });
-
-         
-
-        console.log(credentials);
+    }
+    else if (form.id == 'admin-add-group') {
+        e.preventDefault();
+        const formData = new FormData(form);
+        fetch("/Admin/AddGroup", {
+            method: "POST",
+            body: formData
+        }).then(r => {
+            //if (r.ok)
+            {
+                r.text().then(alert);
+            }
+        });
     }
 })

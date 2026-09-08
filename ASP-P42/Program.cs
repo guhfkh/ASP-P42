@@ -2,6 +2,7 @@ using ASP_P42.Data;
 using ASP_P42.Middleware.AuthSession;
 using ASP_P42.Services.Hash;
 using ASP_P42.Services.Kdf;
+using ASP_P42.Services.Storage;
 using ASP_P42.Services.Time;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,6 +19,7 @@ namespace ASP_P42
 
             builder.Services.AddHash();
             builder.Services.AddKdf();
+            builder.Services.AddStorage();
             builder.Services.AddTime();
 
             builder.Services.AddDbContext<DataContext>(options =>

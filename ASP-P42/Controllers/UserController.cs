@@ -95,6 +95,28 @@ namespace ASP_P42.Controllers
                 return BadRequest(nameof(formModel.Login) + $"{formModel.Login} is already in use");
             }
 
+            // Phone validation
+            formModel.Phone = formModel.Phone.Trim();
+
+            if (!Regex.IsMatch(formModel.Phone, @"^0\d{9}$"))
+            {
+                return BadRequest(
+                    nameof(formModel.Phone) +
+                    " must contain exactly 10 digits and start with 0");
+            }
+
+            // Password validation
+            if (!Regex.IsMatch(
+                formModel.Password,
+                @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{8,}$"))
+            {
+                return BadRequest(
+                    nameof(formModel.Password) +
+                    " must contain at least 8 characters, " +
+                    "one uppercase letter, one lowercase letter, " +
+                    "one digit and one special character");
+            }
+
 
             Guid userId = Guid.NewGuid();
             _dataContext.UserData.Add(new()

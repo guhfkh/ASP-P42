@@ -37,12 +37,23 @@ namespace ASP_P42
 
             // налаштування CORS
             builder.Services.AddCors(options =>
-            options.AddDefaultPolicy(policy =>
-                    policy.AllowAnyOrigin()
-                    .AllowAnyHeader()
-                    .AllowAnyMethod()
-                )
-            );
+            {
+                options.AddPolicy("AllowAll", policy =>
+                {
+                    policy
+                        .AllowAnyOrigin()
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+                });
+
+                options.AddPolicy("AllowLocalhost", policy =>
+                {
+                    policy
+                        .WithOrigins("http://localhost:5173")
+                        .AllowAnyMethod()
+                        .WithHeaders("Authorization", "Content-Type");
+                });
+            });
 
             var app = builder.Build();
 
@@ -57,7 +68,7 @@ namespace ASP_P42
             app.UseHttpsRedirection();
             app.UseRouting();
 
-            app.UseCors();
+            app.UseCors("AllowAll");
 
             app.UseAuthorization();
             app.MapStaticAssets();

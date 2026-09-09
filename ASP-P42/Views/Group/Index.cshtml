@@ -1,0 +1,27 @@
+﻿@model IEnumerable<ASP_P42.Data.Entities.ProductGroup>
+
+@{
+    ViewData["Title"] = "Товарні групи";
+}
+
+<h1>Наявні товарні групи</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Назва</th>
+            <th>Опис</th>
+            <th>Slug</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var group in Model)
+        {
+            <tr>
+                <td>@group.Name</td>
+                <td>@group.Description</td>
+                <td>@group.Slug</td>
+            </tr>
+        }
+    </tbody>
+</table>

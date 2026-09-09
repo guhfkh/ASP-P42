@@ -4,7 +4,21 @@ namespace ASP_P42.LocalStorage
 {
     public class LocalStorageService : IStorageService
     {
-        private readonly string[] allowedExtensions = [".jpd", ".png", ".jpeg", ".webp"];
+        private readonly string[] allowedExtensions = 
+            [
+                ".jpg", 
+                ".jpeg",
+                ".png",
+                ".gif",
+                ".bmp",
+                ".webp",
+                ".svg",
+                ".ico",
+                ".tif",
+                ".tiff",
+                ".avif"
+            ];
+
         private readonly string localFolder = "LocalStorage";
 
         public byte[] Load(string filename)
@@ -34,7 +48,7 @@ namespace ASP_P42.LocalStorage
             {
                 throw new ArgumentException("File must have extension");
             }
-            string ext = file.FileName[dotPosition..];
+            string ext = file.FileName[dotPosition..].ToLower();
 
             if(!allowedExtensions.Contains(ext))
             {

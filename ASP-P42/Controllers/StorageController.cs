@@ -14,13 +14,20 @@ namespace ASP_P42.Controllers
             string ext = "";
             if (dotPosition > 0)
             {
-                ext = id[dotPosition..];
+                ext = id[dotPosition..].ToLower();
             }
-            string contentType = ext switch
-            {
+            string contentType = ext switch 
+            { 
                 ".jpg" or ".jpeg" => "image/jpeg",
                 ".png" => "image/png",
-                _ => "application/octet-stream",
+                ".gif" => "image/gif",
+                ".bmp" => "image/bmp",
+                ".webp" => "image/webp",
+                ".svg" => "image/svg+xml",
+                ".ico" => "image/x-icon",
+                ".tif" or ".tiff" => "image/tiff",
+                ".avif" => "image/avif",
+                _ => "application/octet-stream", 
             };
 
             try

@@ -4,6 +4,7 @@ using ASP_P42.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ASP_P42.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20260910162628_добавил новое поле")]
+    partial class добавилновоеполе
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -29,12 +32,14 @@ namespace ASP_P42.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("GroupId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ImageUrl")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("IsHidden")
@@ -44,22 +49,16 @@ namespace ASP_P42.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("OrderInPrice")
-                        .HasColumnType("int");
-
                     b.Property<string>("Slug")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("Stock")
-                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("GroupId");
 
                     b.HasIndex("Slug")
-                        .IsUnique()
-                        .HasFilter("[Slug] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("Products");
                 });
@@ -116,9 +115,6 @@ namespace ASP_P42.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("IsHidden")
-                        .HasColumnType("int");
-
-                    b.Property<int>("OrderInPrice")
                         .HasColumnType("int");
 
                     b.Property<decimal>("Price")

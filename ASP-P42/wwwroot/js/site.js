@@ -87,4 +87,17 @@ document.addEventListener('submit', e => {
             }
         });
     }
+    else if (form.id == 'admin-add-product') {
+        e.preventDefault();
+        const formData = new FormData(form);
+        fetch("/Admin/AddProduct", {
+            method: "POST",
+            body: formData
+        }).then(r => {
+            //if (r.ok)
+            {
+                r.text().then(alert);
+            }
+        });
+    }
 })

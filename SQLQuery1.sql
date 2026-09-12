@@ -1,0 +1,2 @@
+﻿INSERT INTO [dbo].[ProductGroups] ([Id], [ParentId], [Name], [Description], [Slug], [ImageUrl], [IsHidden]) VALUES (N'1bf1380e-47aa-404d-b270-b682767f4447', NULL, N'Shop gaming', N'Get your game on', N'game', N'/img/group1.jpg', 0);
+INSERT INTO [dbo].[ProductGroups] ([Id], [ParentId], [Name], [Description], [Slug], [ImageUrl], [IsHidden]) VALUES (N'118513d4-5c44-4e8f-983d-853fdc3fe4e5', NULL, N'Jeans', N'Shop Fashion for less', N'jeans', N'/img/group2.jpg', 0)

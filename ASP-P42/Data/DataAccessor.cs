@@ -1,10 +1,18 @@
-﻿namespace ASP_P42.Data
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace ASP_P42.Data
 {
     public class DataAccessor(DataContext dataContext)
     {
         private readonly DataContext _dataContext = dataContext;
 
-        public Guid GetDbIdentity() => Guid.NewGuid();
+        public Guid GetDbIdentity()
+        {
+            return _dataContext.Database
+                .SqlQuery<Guid>($"SELECT NEWID()")
+                .AsEnumerable()
+                .First();
+        }
 
         public List<Entities.ProductGroup> GetAllProductGroups(
             bool isIncludeHidden = false

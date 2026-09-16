@@ -27,6 +27,7 @@ namespace ASP_P42
                         builder.Configuration.GetConnectionString("LocalDB")
                     )
             );
+            builder.Services.AddScoped<DataAccessor>();
 
             builder.Services.AddDistributedMemoryCache();
 

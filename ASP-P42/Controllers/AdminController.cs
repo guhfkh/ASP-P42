@@ -5,10 +5,15 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ASP_P42.Controllers
 {
-    public class AdminController(IStorageService storageService, DataContext dataContext) : Controller
+    public class AdminController(
+        IStorageService storageService,
+        DataContext dataContext,
+        DataAccessor dataAccessor
+    ) : Controller
     {
         private readonly IStorageService _storageService = storageService;
         private readonly DataContext _dataContext = dataContext;
+        private readonly DataAccessor _dataAccessor = dataAccessor;
 
 
         public IActionResult Index()
@@ -20,8 +25,7 @@ namespace ASP_P42.Controllers
         {
             AdminGroupViewModel viewModel = new()
             {
-                Groups = _dataContext.ProductGroups
-                    .OrderBy(g => g.OrderInPrice).ToList(),
+                Groups = _dataAccessor.GetAllProductGroups(isIncludeHidden:true),
             };
             return View(viewModel);
         }
@@ -29,30 +33,83 @@ namespace ASP_P42.Controllers
         [HttpPost]
         public IActionResult AddProduct(AdminAddProductFormModel formModel)
         {
+            // Валидация модели
+            if (string.IsNullOrWhiteSpace(formModel.Name) ||
+                formModel.Name.Length < 2 ||
+                formModel.Name.Length > 100 ||
+                !System.Text.RegularExpressions.Regex.IsMatch(
+                    formModel.Name, @"^[\p{L}\p{N} ]+$"))
+            {
+                return BadRequest(
+                    "Название должно содержать от 2 до 100 символов и не содержать специальных символов");
+            }
+
+            if (formModel.Description != null &&
+                formModel.Description.Length > 1000)
+            {
+                return BadRequest(
+                    "Описание не должно превышать 1000 символов");
+            }
+
+            if (string.IsNullOrWhiteSpace(formModel.Slug) ||
+                formModel.Slug.Length > 100 ||
+                !System.Text.RegularExpressions.Regex.IsMatch(
+                    formModel.Slug, @"^[a-z0-9]+(?:-[a-z0-9]+)*$"))
+            {
+                return BadRequest(
+                    "Slug должен содержать только латинские буквы в нижнем регистре, цифры и дефисы");
+            }
+
+            bool slugExists = _dataAccessor.IsSlugExists(formModel.Slug,
+                                                         formModel.ProductId);
+
+            if (slugExists)
+            {
+                return BadRequest("Товар с таким Slug уже существует");
+            }
+
             try
             {
                 Data.Entities.ProductGroup group = _dataContext
                     .ProductGroups
                     .FirstOrDefault(g => g.Id == formModel.GroupId)
-                ?? throw new Exception($"Group not found with id='{formModel.GroupId}'");
+                ?? throw new Exception(
+                    $"Group not found with id='{formModel.GroupId}'");
 
-                if(formModel.ProductId != null)
+                string? imageUrl = null;
+
+                if (formModel.Image != null)
+                {
+                    imageUrl = _storageService.Save(formModel.Image);
+                }
+
+                if (formModel.ProductId != null)
                 {
                     Data.Entities.Product? product = _dataContext
                         .Products
                         .FirstOrDefault(p => p.Id == formModel.ProductId)
-                    ?? throw new Exception($"Product not found with id='{formModel.ProductId}'");
-                    
+                    ?? throw new Exception(
+                        $"Product not found with id='{formModel.ProductId}'");
+
+                    Guid productId = product.Id;
+
+                    _dataContext.ProductVersions.Add(new()
+                    {
+                        Id = _dataAccessor.GetDbIdentity(),
+                        ProductId = productId,
+                        ImageUrl = imageUrl,
+                        Price = (decimal)formModel.Price,
+                        Stock = formModel.Stock,
+                        OrderInPrice = 1,
+                        Slug = formModel.Slug,
+                        IsHidden = formModel.IsHidden,
+                        Version = formModel.Name
+                    });
                 }
                 else
                 {
-                    string? imageUrl = null;
-                    if(formModel.Image != null)
-                    {
-                        imageUrl = _storageService.Save(formModel.Image);
-                    }
-
                     Guid productId = Guid.NewGuid();
+
                     _dataContext.Products.Add(new()
                     {
                         Id = productId,
@@ -76,9 +133,10 @@ namespace ASP_P42.Controllers
                         Slug = formModel.Slug,
                         IsHidden = formModel.IsHidden,
                     });
-
-                    _dataContext.SaveChanges();
                 }
+
+                _dataContext.SaveChanges();
+
                 return Ok();
             }
             catch (Exception ex)
@@ -91,13 +149,15 @@ namespace ASP_P42.Controllers
         {
             AdminGroupViewModel viewModel = new()
             {
-                Groups = _dataContext.ProductGroups.ToList(),
+                Groups = _dataAccessor.GetAllProductGroups(isIncludeHidden: true),
             };
             return View(viewModel);
         }
 
         [HttpPost]
-        public IActionResult AddGroup(AdminAddGroupFormModel formModel)
+        public async Task<IActionResult> AddGroupAsync(
+            AdminAddGroupFormModel formModel
+        )
         {
             try
             {
@@ -107,9 +167,9 @@ namespace ASP_P42.Controllers
                  * - опис (довжина)
                  * - Slug (унікальність, url-коректність)
                  */
-                _dataContext.ProductGroups.Add(new()
+               Guid newGroupId = await 
+                    _dataAccessor.AddNewProductGroup(new()
                 {
-                    Id = Guid.NewGuid(),
                     ParentId = formModel.ParentId,
                     Name = formModel.Name,
                     Description = formModel.Description,
@@ -117,8 +177,8 @@ namespace ASP_P42.Controllers
                     IsHidden = formModel.IsHidden,
                     ImageUrl = "/storage/image/" + _storageService.Save(formModel.Image)
                 });
-                _dataContext.SaveChanges();
-                return Ok();
+                
+                return Ok(newGroupId);
             }
             catch (Exception ex)
             {

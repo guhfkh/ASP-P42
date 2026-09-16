@@ -32,6 +32,6 @@ namespace ASP_P42.Models.Admin
         public int Stock { get; set; } = 0;
 
         [FromForm(Name = "product-price")]
-        public int Price { get; set; } = 0;
+        public decimal Price { get; set; } = 0;
     }
 }

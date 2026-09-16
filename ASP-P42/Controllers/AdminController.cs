@@ -51,21 +51,37 @@ namespace ASP_P42.Controllers
                     "Описание не должно превышать 1000 символов");
             }
 
-            if (string.IsNullOrWhiteSpace(formModel.Slug) ||
-                formModel.Slug.Length > 100 ||
-                !System.Text.RegularExpressions.Regex.IsMatch(
-                    formModel.Slug, @"^[a-z0-9]+(?:-[a-z0-9]+)*$"))
+            if (!string.IsNullOrWhiteSpace(formModel.Slug))
             {
-                return BadRequest(
-                    "Slug должен содержать только латинские буквы в нижнем регистре, цифры и дефисы");
+                if (formModel.Slug.Length > 100 ||
+                    !System.Text.RegularExpressions.Regex.IsMatch(
+                        formModel.Slug, @"^[a-z0-9]+(?:-[a-z0-9]+)*$"))
+                {
+                    return BadRequest(
+                        "Slug має некоректний формат");
+                }
+
+                bool slugExists = _dataAccessor.IsSlugExists(
+                    formModel.Slug,
+                    formModel.ProductId);
+
+                if (slugExists)
+                {
+                    return BadRequest(
+                        "Товар з таким Slug вже існує");
+                }
             }
 
-            bool slugExists = _dataAccessor.IsSlugExists(formModel.Slug,
-                                                         formModel.ProductId);
-
-            if (slugExists)
+            if (formModel.Stock != -1 && formModel.Stock <= 0)
             {
-                return BadRequest("Товар с таким Slug уже существует");
+                return BadRequest(
+                    "Кількість повинна бути позитивним числом або -1");
+            }
+
+            if (formModel.Price <= 0.01m)
+            {
+                return BadRequest(
+                    "Ціна повинна бути більшою за 0.01");
             }
 
             try

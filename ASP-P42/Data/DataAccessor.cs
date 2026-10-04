@@ -8,40 +8,93 @@ namespace ASP_P42.Data
         private readonly DataContext _dataContext = dataContext;
 
         public Guid GetDbIdentity() => Guid.NewGuid();
-        /* Д.З. - реалізувати метод отримання унікального ідентифікатора 
-         * з бази даних. SQL Server має функцію NEWID(), яка генерує 
-         * унікальний ідентифікатор.
-         */
 
-        public List<Entities.ProductGroup> GetAllProductGroups(bool isIncludeHidden = false)
+        public async Task<Guid> AddNewProductGroup(ProductGroup productGroup)
         {
-            IQueryable<Entities.ProductGroup> query = _dataContext.ProductGroups;
+            Guid id = GetDbIdentity();
+
+            productGroup.Id = id;
+
+            _dataContext.ProductGroups.Add(productGroup);
+
+            await _dataContext.SaveChangesAsync();
+
+            return id;
+        }
+
+        public List<ProductGroup> GetAllProductGroups(
+            bool isIncludeHidden = false)
+        {
+            IQueryable<ProductGroup> query = _dataContext.ProductGroups;
+
             if (!isIncludeHidden)
             {
                 query = query.Where(g => g.IsHidden == 0);
             }
+
             return [.. query.OrderBy(g => g.OrderInPrice)];
         }
 
-        public async Task<Guid> AddNewProductGroup(Entities.ProductGroup productGroup)
+        public ProductGroup? GetProductGroupById(Guid id)
         {
-            Guid id = GetDbIdentity();
-            productGroup.Id = id;
-            _dataContext.ProductGroups.Add(productGroup);
-            await _dataContext.SaveChangesAsync();
-            return id;
+            return _dataContext.ProductGroups
+                .FirstOrDefault(g => g.Id == id);
         }
 
-        public async Task<Guid> AddNewProduct(AdminAddProductFormModel formModel, String? imageUrl)
+        public bool UpdateProductGroup(ProductGroup productGroup)
+        {
+            ProductGroup? existingGroup =
+                _dataContext.ProductGroups
+                    .FirstOrDefault(g => g.Id == productGroup.Id);
+
+            if (existingGroup == null)
+            {
+                return false;
+            }
+
+            existingGroup.ParentId = productGroup.ParentId;
+            existingGroup.Name = productGroup.Name;
+            existingGroup.Description = productGroup.Description;
+            existingGroup.Slug = productGroup.Slug;
+            existingGroup.ImageUrl = productGroup.ImageUrl;
+            existingGroup.IsHidden = productGroup.IsHidden;
+            existingGroup.OrderInPrice = productGroup.OrderInPrice;
+
+            _dataContext.SaveChanges();
+
+            return true;
+        }
+
+        public bool DeleteProductGroup(Guid id)
+        {
+            ProductGroup? productGroup =
+                _dataContext.ProductGroups
+                    .FirstOrDefault(g => g.Id == id);
+
+            if (productGroup == null)
+            {
+                return false;
+            }
+
+            _dataContext.ProductGroups.Remove(productGroup);
+
+            _dataContext.SaveChanges();
+
+            return true;
+        }
+
+        public async Task<Guid> AddNewProduct(
+            AdminAddProductFormModel formModel,
+            String? imageUrl)
         {
             Guid id = GetDbIdentity();
+
             if (formModel.ProductId != null)
             {
-
                 _dataContext.ProductVersions.Add(new()
                 {
                     Id = id,
-                    ProductId = (await GetProductById(formModel.ProductId.Value))!.Id,
+                    ProductId = GetProductById(formModel.ProductId.Value)!.Id,
                     ImageUrl = imageUrl,
                     Price = (decimal)formModel.Price,
                     Stock = formModel.Stock,
@@ -53,9 +106,13 @@ namespace ASP_P42.Data
             }
             else
             {
-                // Розбираємо дані на Товар і Версію
-                Entities.ProductGroup group = await GetProductGroupById(formModel.GroupId)!;
+                ProductGroup group =
+                    GetProductGroupById(formModel.GroupId)
+                    ?? throw new Exception(
+                        $"Product group not found with id='{formModel.GroupId}'");
+
                 Guid productId = GetDbIdentity();
+
                 _dataContext.Products.Add(new()
                 {
                     Id = productId,
@@ -67,6 +124,7 @@ namespace ASP_P42.Data
                     OrderInPrice = formModel.Order,
                     Slug = formModel.Slug,
                 });
+
                 _dataContext.ProductVersions.Add(new()
                 {
                     Id = id,
@@ -81,45 +139,40 @@ namespace ASP_P42.Data
             }
 
             await _dataContext.SaveChangesAsync();
+
             return id;
         }
 
-        public async Task<bool> IsProductFormModelValidAsync(AdminAddProductFormModel formModel)
+        public async Task<bool> IsProductFormModelValidAsync(
+            AdminAddProductFormModel formModel)
         {
-            var group = await GetProductGroupById(formModel.GroupId)
-                   ?? throw new Exception($"Product group not found with id='{formModel.GroupId}'");
+            var group = GetProductGroupById(formModel.GroupId)
+                ?? throw new Exception(
+                    $"Product group not found with id='{formModel.GroupId}'");
+
             if (formModel.ProductId != null)
             {
-                // додавання нової версії, слід пересвідчитись у наявності товару
-                _ = await GetProductById(formModel.ProductId.Value)
-                ?? throw new Exception($"Product not found with id='{formModel.ProductId}'");
+                _ = GetProductById(formModel.ProductId.Value)
+                    ?? throw new Exception(
+                        $"Product not found with id='{formModel.ProductId}'");
             }
+
             if (formModel.Slug != null)
             {
-                // перевірка на унікальність slug
                 if (_dataContext.Products.Any(p => p.Slug == formModel.Slug))
                 {
-                    throw new Exception($"Slug '{formModel.Slug}' is already in use by other product");
+                    throw new Exception(
+                        $"Slug '{formModel.Slug}' is already in use by other product");
                 }
             }
+
             return true;
         }
 
-        public async Task<Entities.ProductGroup?> GetProductGroupById(Guid guid)
+        public Product? GetProductById(Guid id)
         {
-            return _dataContext.ProductGroups.FirstOrDefault(g => g.Id == guid);
-        }
-
-        public async Task<Entities.Product?> GetProductById(Guid guid)
-        {
-            return _dataContext.Products.FirstOrDefault(p => p.Id == guid);
+            return _dataContext.Products
+                .FirstOrDefault(p => p.Id == id);
         }
     }
 }
-/* DAL - Data Access Layer
- * Шар доступу до даних - поєднання декількох DAO (Data Access Object)
- * або узагальнений інтерфейс одержання даних
- * 
- * Д.З. Реалізувати CRUD (Create[вже є], Read, Update, Delete) для сутності ProductGroup
- * 
- */

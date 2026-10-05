@@ -28,7 +28,7 @@ namespace ASP_P42.Controllers.Api
             return url;
         }
 
-        [HttpGet]   // це запускатиметься запитом GET /api/group
+        [HttpGet]
         public RestResponse GetAllGroups(int page = 1, int pageSize = 10)
         {
             var query = _dataContext
@@ -46,20 +46,25 @@ namespace ASP_P42.Controllers.Api
                 TotalItems = cnt,
                 TotalPages = (int)Math.Ceiling((float)cnt / pageSize),
             };
-            ProductGroup[] groups = query.Skip(pageSize * (page - 1)).Take(pageSize).ToArray();
-            foreach (var group in groups)
-            {
-                group.ImageUrl = FullImageUrl(group.ImageUrl)!;
-                if (group.Children.Count > 0)
+
+            ProductGroup[] groups = query
+                .Skip(pageSize * (page - 1))
+                .Take(pageSize)
+                .ToArray();
+
+            ProductGroup[] result = [
+                .. groups.Select(group => group with
+        {
+            ImageUrl = FullImageUrl(group.ImageUrl)!,
+            Children = [
+                .. group.Children.Select(child => child with
                 {
-                    foreach (var c in group.Children)
-                    {
-                        c.ImageUrl = FullImageUrl(c.ImageUrl)!;
-                    }
-                }
-            }
-            ;
-            // повертаємо дані довільного типу, вони автоматично перетворяться на JSON
+                    ImageUrl = FullImageUrl(child.ImageUrl)!
+                })
+            ]
+        })
+            ];
+
             return new()
             {
                 Meta = new()
@@ -68,13 +73,14 @@ namespace ASP_P42.Controllers.Api
                     DataType = "json/array",
                     CacheTime = 86_400_000,
                     Manipulations = ["GET"],
-                    Links = {
-                        { "self", "/api/group" },
-                        { "sub", "/api/group/{slug}" },
-                    },
+                    Links =
+            {
+                { "self", "/api/group" },
+                { "sub", "/api/group/{slug}" },
+            },
                     Pagination = pagination,
                 },
-                Data = groups,
+                Data = result,
             };
         }
         /* Д.З. Змінити реалізацію GetAllGroups з використанням операцій клонування (with {}) 

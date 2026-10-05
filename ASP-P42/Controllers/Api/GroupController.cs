@@ -4,6 +4,7 @@ using ASP_P42.Models.Rest;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text.RegularExpressions;
 
 namespace ASP_P42.Controllers.Api
 {
@@ -12,6 +13,20 @@ namespace ASP_P42.Controllers.Api
     public class GroupController(DataContext dataContext) : ControllerBase
     {
         private readonly DataContext _dataContext = dataContext;
+
+        private String? FullImageUrl(String? url)
+        {
+            if (url == null) return null;
+            if (url.StartsWith('/'))
+            {
+                return $"{Request.Scheme}://{Request.Host}{url}";
+            }
+            if (!url.StartsWith("http"))
+            {
+                return $"{Request.Scheme}://{Request.Host}/Storage/Item/{url}";
+            }
+            return url;
+        }
 
         [HttpGet]   // це запускатиметься запитом GET /api/group
         public RestResponse GetAllGroups(int page = 1, int pageSize = 10)
@@ -31,15 +46,19 @@ namespace ASP_P42.Controllers.Api
                 TotalItems = cnt,
                 TotalPages = (int)Math.Ceiling((float)cnt / pageSize),
             };
-            ProductGroup[] groups = query.Skip(pageSize * (page - 1))
-                                            .Take(pageSize).ToArray();
+            ProductGroup[] groups = query.Skip(pageSize * (page - 1)).Take(pageSize).ToArray();
             foreach (var group in groups)
             {
-                if (group.ImageUrl.StartsWith('/'))
+                group.ImageUrl = FullImageUrl(group.ImageUrl)!;
+                if (group.Children.Count > 0)
                 {
-                    group.ImageUrl = $"{Request.Scheme}://{Request.Host}{group.ImageUrl}";
+                    foreach (var c in group.Children)
+                    {
+                        c.ImageUrl = FullImageUrl(c.ImageUrl)!;
+                    }
                 }
             }
+            ;
             // повертаємо дані довільного типу, вони автоматично перетворяться на JSON
             return new()
             {
@@ -56,6 +75,72 @@ namespace ASP_P42.Controllers.Api
                     Pagination = pagination,
                 },
                 Data = groups,
+            };
+        }
+        /* Д.З. Змінити реалізацію GetAllGroups з використанням операцій клонування (with {}) 
+         * та колекційних ініціалізаторів для об'єктів з повними URL зображень.
+         */
+
+        [HttpGet("{id}")]
+        public RestResponse GetOneGroup(String id, int page = 1, int pageSize = 10)
+        {
+            ProductGroup? group = _dataContext
+                .ProductGroups
+                .Include(g => g.Products.OrderBy(p => p.OrderInPrice))
+                    .ThenInclude(p => p.Versions)
+                .Where(g => g.IsHidden == 0 && g.Slug == id)
+                .FirstOrDefault();
+
+            if (group == null)
+            {
+                return new()
+                {
+                    Status = RestStatus.NotFound,
+                };
+            }
+
+            int cnt = group.Products.Count;
+
+            RestMetaPagination pagination = new()
+            {
+                Page = page,
+                PageSize = pageSize,
+                TotalItems = cnt,
+                TotalPages = (int)Math.Ceiling((float)cnt / pageSize),
+            };
+
+            // group.Products = group.Products.Skip(pageSize * (page - 1)).Take(pageSize).ToList();
+            var grp = group with
+            {
+                ImageUrl = FullImageUrl(group.ImageUrl)!,
+                Products = [..
+                    group
+                    .Products
+                    .Skip(pageSize * (page - 1))
+                    .Take(pageSize)
+                    .Select(p => p with {
+                        ImageUrl = FullImageUrl(p.ImageUrl),
+                        Versions = [.. p.Versions.Select(v => v with { ImageUrl = FullImageUrl(v.ImageUrl) })]
+                    })
+                ]
+            };
+
+
+            return new()
+            {
+                Meta = new()
+                {
+                    ApiName = "Group Products",
+                    DataType = "json/object",
+                    CacheTime = 86_400_000,
+                    Manipulations = ["GET"],
+                    Links = {
+                        { "parent", "/api/group" },
+                        { "self", "/api/group/{slug}" },
+                    },
+                    Pagination = pagination,
+                },
+                Data = grp,
             };
         }
 
@@ -92,4 +177,7 @@ Applications (застосунки) - відокремлені програми,
    запускають одну і ту саму активність
 - АРІ має постійну адресу, а відмінність в активності задається методами запиту
    GET /path та POST /path  запускають різні дії
+
+Д.З. Впровадити REST принципи у власні курсові проєкти.
+Прикласти посилання на репозиторії.
  */

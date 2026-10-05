@@ -29,6 +29,8 @@ namespace ASP_P42.Controllers
         [HttpPost]
         public async Task<IActionResult> AddProduct(AdminAddProductFormModel formModel)
         {
+            // if(ModelState.IsValid) { }
+            // else { ModelState.Er}
             try
             {
                 await _dataAccessor.IsProductFormModelValidAsync(formModel);

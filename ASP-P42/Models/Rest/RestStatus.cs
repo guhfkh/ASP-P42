@@ -8,6 +8,7 @@
 
         public static readonly RestStatus Ok = new() { IsOk = true, Code = 200, Message = "OK" };
         public static readonly RestStatus BadRequest = new() { IsOk = false, Code = 400, Message = "Bad Request" };
+        public static readonly RestStatus NotFound = new() { IsOk = false, Code = 404, Message = "Not Found" };
     }
 }
 /* Д.З. Заповнити class RestStatus стандартними статусами відповідей,

@@ -1,11 +1,17 @@
 ﻿using ASP_P42.Data.Entities;
 using ASP_P42.Models.Admin;
+using ASP_P42.Models.User;
+using ASP_P42.Services.Kdf;
+using Microsoft.EntityFrameworkCore;
 
 namespace ASP_P42.Data
 {
-    public class DataAccessor(DataContext dataContext)
+    public class DataAccessor(
+        DataContext dataContext,
+        IKdfService kdfService)
     {
         private readonly DataContext _dataContext = dataContext;
+        private readonly IKdfService _kdfService = kdfService;
 
         public Guid GetDbIdentity() => Guid.NewGuid();
 
@@ -146,7 +152,7 @@ namespace ASP_P42.Data
         public async Task<bool> IsProductFormModelValidAsync(
             AdminAddProductFormModel formModel)
         {
-            var group = GetProductGroupById(formModel.GroupId)
+            _ = GetProductGroupById(formModel.GroupId)
                 ?? throw new Exception(
                     $"Product group not found with id='{formModel.GroupId}'");
 
@@ -173,6 +179,73 @@ namespace ASP_P42.Data
         {
             return _dataContext.Products
                 .FirstOrDefault(p => p.Id == id);
+        }
+
+        public bool IsLoginAvailable(string login)
+        {
+            return !_dataContext.UserAccesses
+                .Any(ua => ua.Login == login);
+        }
+
+        public bool RegisterUser(UserSignupFormModel formModel)
+        {
+            Guid userId = GetDbIdentity();
+
+            _dataContext.UserData.Add(new()
+            {
+                Id = userId,
+                FullName = formModel.FullName,
+                Email = formModel.Email,
+                Phone = formModel.Phone,
+                RegisteredAt = DateTime.Now,
+                Birthdate = default
+            });
+
+            string salt = Guid.NewGuid().ToString();
+
+            _dataContext.UserAccesses.Add(new()
+            {
+                Id = GetDbIdentity(),
+                UserId = userId,
+                RoleId = _dataContext.UserRoles
+                    .First(r => r.Name == "User")
+                    .Id,
+                Login = formModel.Login,
+                Salt = salt,
+                Dk = _kdfService.Dk(formModel.Password, salt)
+            });
+
+            _dataContext.SaveChanges();
+
+            return true;
+        }
+
+        public UserAccess? AuthenticateUser(
+            string login,
+            string password)
+        {
+            UserAccess? userAccess = _dataContext
+                .UserAccesses
+                .Include(ua => ua.UserData)
+                .Include(ua => ua.UserRole)
+                .AsNoTracking()
+                .FirstOrDefault(ua => ua.Login == login);
+
+            if (userAccess == null)
+            {
+                return null;
+            }
+
+            string dk = _kdfService.Dk(
+                password,
+                userAccess.Salt);
+
+            if (dk == userAccess.Dk)
+            {
+                return userAccess;
+            }
+
+            return null;
         }
     }
 }

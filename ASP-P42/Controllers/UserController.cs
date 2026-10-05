@@ -1,11 +1,9 @@
 ﻿using ASP_P42.Data;
 using ASP_P42.Data.Entities;
 using ASP_P42.Models.User;
-using ASP_P42.Services.Kdf;
 using ASP_P42.Services.Time;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -13,18 +11,16 @@ using System.Text.RegularExpressions;
 namespace ASP_P42.Controllers
 {
     public class UserController(
-            DataContext dataContext,
-            IKdfService kdfService,
-            ITimeService timeService
-        ) : Controller
+        DataAccessor dataAccessor,
+        ITimeService timeService
+    ) : Controller
     {
-        private readonly DataContext _dataContext = dataContext;
-        private readonly IKdfService _kdfService = kdfService;
+        private readonly DataAccessor _dataAccessor = dataAccessor;
         private readonly ITimeService _timeService = timeService;
 
-        public IActionResult SignUp([FromBody]UserSignupFormModel formModel)
+        public IActionResult SignUp([FromBody] UserSignupFormModel formModel)
         {
-            if(formModel == null)
+            if (formModel == null)
             {
                 return BadRequest("data structure non-bindable to model");
             }
@@ -67,35 +63,48 @@ namespace ASP_P42.Controllers
             }
 
             formModel.FullName = formModel.FullName.Trim();
+
             if (formModel.FullName.Length < 2)
             {
-                return BadRequest(nameof(formModel.FullName) + " too short (2 symbols at least)");
+                return BadRequest(
+                    nameof(formModel.FullName) +
+                    " too short (2 symbols at least)");
             }
 
             formModel.Login = formModel.Login.Trim();
+
             if (formModel.Login.Length < 2)
             {
-                return BadRequest(nameof(formModel.Login) + " too short (2 symbols at least)");
+                return BadRequest(
+                    nameof(formModel.Login) +
+                    " too short (2 symbols at least)");
             }
+
             if (formModel.Login.Contains(':'))
             {
-                return BadRequest(nameof(formModel.Login) + " could not contain colon (':')");
+                return BadRequest(
+                    nameof(formModel.Login) +
+                    " could not contain colon (':')");
             }
 
             formModel.Email = formModel.Email.Trim();
+
             if (!Regex.IsMatch(
                 formModel.Email,
                 @"^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$"))
             {
-                return BadRequest(nameof(formModel.Email) + " has invalid format");
+                return BadRequest(
+                    nameof(formModel.Email) +
+                    " has invalid format");
             }
 
-            if(_dataContext.UserAccesses.Any(ua => ua.Login == formModel.Login))
+            if (!_dataAccessor.IsLoginAvailable(formModel.Login))
             {
-                return BadRequest(nameof(formModel.Login) + $"{formModel.Login} is already in use");
+                return BadRequest(
+                    nameof(formModel.Login) +
+                    $"{formModel.Login} is already in use");
             }
 
-            // Phone validation
             formModel.Phone = formModel.Phone.Trim();
 
             if (!Regex.IsMatch(formModel.Phone, @"^0\d{9}$"))
@@ -105,7 +114,6 @@ namespace ASP_P42.Controllers
                     " must contain exactly 10 digits and start with 0");
             }
 
-            // Password validation
             if (!Regex.IsMatch(
                 formModel.Password,
                 @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{8,}$"))
@@ -117,65 +125,44 @@ namespace ASP_P42.Controllers
                     "one digit and one special character");
             }
 
+            _dataAccessor.RegisterUser(formModel);
 
-            Guid userId = Guid.NewGuid();
-            _dataContext.UserData.Add(new()
-            {
-                Id = userId,
-                FullName = formModel.FullName,
-                Email = formModel.Email,
-                Phone = formModel.Phone,
-                RegisteredAt = DateTime.Now,
-                Birthdate = default,
-            }); 
-
-            string salt = Guid.NewGuid().ToString();
-            _dataContext.UserAccesses.Add(new()
-            {
-                Id = Guid.NewGuid(),
-                UserId = userId,
-                RoleId = _dataContext.UserRoles.First(r => r.Name == "User").Id,
-                Login = formModel.Login,
-                Salt = salt,
-                Dk = _kdfService.Dk(formModel.Password, salt),
-            });
-
-            _dataContext.SaveChanges();
             return Json(formModel);
         }
 
         public IActionResult BasicAuth()
         {
             UserAccess? userAccess;
+
             try
             {
-                userAccess = AuthenticateUser();
+                userAccess = GetAuthenticatedUser();
             }
-            catch ( Exception ex )
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
 
-            if ( userAccess == null )
+            if (userAccess == null)
             {
                 return Unauthorized(
-                        "Credentials rejected: chech login and password");
+                    "Credentials rejected: chech login and password");
             }
 
             HttpContext.Session.SetString(
                 "userAccessId",
-                userAccess.Id.ToString()
-                );
+                userAccess.Id.ToString());
 
             return Ok();
         }
-    
+
         public IActionResult BasicAuthJwt()
         {
             UserAccess? userAccess;
+
             try
             {
-                userAccess = AuthenticateUser();
+                userAccess = GetAuthenticatedUser();
             }
             catch (Exception ex)
             {
@@ -185,54 +172,56 @@ namespace ASP_P42.Controllers
             if (userAccess == null)
             {
                 return Unauthorized(
-                        "Credentials rejected: chech login and password");
+                    "Credentials rejected: chech login and password");
             }
 
             var header = new
             {
                 alg = "HS256",
-                typ = "JWT",
+                typ = "JWT"
             };
 
             long time = _timeService.GetTimestamp();
+
             var payload = new
             {
                 sub = userAccess.Login,
                 iat = time,
                 exp = time + 1_000_000,
                 name = userAccess.UserData.FullName,
-                email = userAccess.UserData.Email,
+                email = userAccess.UserData.Email
             };
 
-            string body = Base64UrlTextEncoder.Encode(
+            string body =
+                Base64UrlTextEncoder.Encode(
                     Encoding.UTF8.GetBytes(
-                        JsonSerializer.Serialize(header)
-                    ))
-                    + "." +
-                    Base64UrlTextEncoder.Encode(
+                        JsonSerializer.Serialize(header)))
+                + "."
+                + Base64UrlTextEncoder.Encode(
                     Encoding.UTF8.GetBytes(
-                        JsonSerializer.Serialize(payload)
-                    )
-                );
+                        JsonSerializer.Serialize(payload)));
 
-            string signature = Base64UrlTextEncoder.Encode(
+            string signature =
+                Base64UrlTextEncoder.Encode(
                     System.Security.Cryptography.HMACSHA256.HashData(
                         Encoding.UTF8.GetBytes("secret"),
-                        Encoding.UTF8.GetBytes(body)
-                    ));
+                        Encoding.UTF8.GetBytes(body)));
 
             return Ok(body + "." + signature);
         }
 
-        private UserAccess? AuthenticateUser()
+        private UserAccess? GetAuthenticatedUser()
         {
-            string authHeader = HttpContext.Request.Headers.Authorization.ToString();
+            string authHeader =
+                HttpContext.Request.Headers.Authorization.ToString();
+
             if (authHeader == string.Empty)
             {
                 throw new Exception("Missing Autorization header");
             }
 
             string scheme = "Basic ";
+
             if (!authHeader.StartsWith(scheme))
             {
                 throw new Exception(
@@ -242,6 +231,7 @@ namespace ASP_P42.Controllers
             string credentials = authHeader[scheme.Length..];
 
             byte[] rawData;
+
             try
             {
                 rawData = Convert.FromBase64String(credentials);
@@ -253,6 +243,7 @@ namespace ASP_P42.Controllers
             }
 
             string userPass;
+
             try
             {
                 userPass = Encoding.UTF8.GetString(rawData);
@@ -270,30 +261,17 @@ namespace ASP_P42.Controllers
                 throw new Exception(
                     "User-pass must be concatenated by ':'");
             }
+
             string login = parts[0];
             string password = parts[1];
 
-            if(login.Contains(':'))
+            if (login.Contains(':'))
             {
                 throw new Exception(
                     "Login must not contain ':' according to RFC 7617");
             }
 
-            if (_dataContext
-                .UserAccesses
-                .Include(ua => ua.UserData)
-                .Include(ua => ua.UserRole)
-                .AsNoTracking()
-                .FirstOrDefault(ua => ua.Login == login)
-                is UserAccess userAccess)
-            {
-                string dk = _kdfService.Dk(password, userAccess.Salt);
-                if (dk == userAccess.Dk)
-                {
-                    return userAccess;
-                }
-            }
-            return null;
+            return _dataAccessor.AuthenticateUser(login, password);
         }
     }
 }

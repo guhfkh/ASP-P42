@@ -4,6 +4,9 @@ namespace ASP_P42.Models.Admin
 {
     public class AdminAddGroupFormModel
     {
+        [FromForm(Name = "group-id")]
+        public Guid? Id { get; set; }
+
         [FromForm(Name = "group-parent")]
         public Guid? ParentId { get; set; } = null!;
 
@@ -22,7 +25,7 @@ namespace ASP_P42.Models.Admin
         [FromForm(Name = "group-hidden")]
         public int IsHidden { get; set; } = 0;
 
-        [FromForm(Name = "product-order")]
+        [FromForm(Name = "group-order")]
         public int Order { get; set; } = 0;
     }
 }

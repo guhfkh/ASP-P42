@@ -82,7 +82,7 @@ namespace ASP_P42.Data
                 return false;
             }
 
-            _dataContext.ProductGroups.Remove(productGroup);
+            productGroup.IsHidden = 1;
 
             _dataContext.SaveChanges();
 

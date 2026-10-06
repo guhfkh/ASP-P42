@@ -61,6 +61,67 @@ namespace ASP_P42.Controllers
             return View(viewModel);
         }
 
+        public IActionResult EditGroup(Guid id)
+        {
+            ProductGroup? group = _dataAccessor.GetProductGroupById(id);
+
+            if (group == null)
+            {
+                return NotFound();
+            }
+
+            ViewBag.Groups = _dataAccessor.GetAllProductGroups(
+                isIncludeHidden: true);
+
+            return View(group);
+        }
+
+        [HttpPost]
+        public IActionResult EditGroup(AdminEditGroupFormModel formModel)
+        {
+            try
+            {
+                ProductGroup? existingGroup =
+                    _dataAccessor.GetProductGroupById(formModel.Id);
+
+                if (existingGroup == null)
+                {
+                    return NotFound();
+                }
+
+                string imageUrl = existingGroup.ImageUrl;
+
+                if (formModel.Image != null)
+                {
+                    imageUrl = "/storage/image/" +
+                               _storageService.Save(formModel.Image);
+                }
+
+                bool result = _dataAccessor.UpdateProductGroup(new()
+                {
+                    Id = formModel.Id,
+                    ParentId = formModel.ParentId,
+                    Name = formModel.Name,
+                    Description = formModel.Description,
+                    Slug = formModel.Slug,
+                    ImageUrl = imageUrl,
+                    IsHidden = formModel.IsHidden,
+                    OrderInPrice = formModel.OrderInPrice
+                });
+
+                if (!result)
+                {
+                    return NotFound();
+                }
+
+                return RedirectToAction(nameof(Group));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPost]
         public async Task<IActionResult> AddGroup(AdminAddGroupFormModel formModel)
         {
@@ -89,5 +150,45 @@ namespace ASP_P42.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpPost]
+        public IActionResult DeleteGroup(Guid id)
+        {
+            try
+            {
+                bool result = _dataAccessor.DeleteProductGroup(id);
+
+                if (!result)
+                {
+                    return NotFound();
+                }
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }
+
+/* Екзаменаційне завдання:
+ * Реалізувати повний перелік операції з товарними групами:
+ * - створення (вже є)
+ * - перегляд
+ * - оновлення
+ * - видалення
+ * 1) на сторінці /Admin/Group перед формою додавання групи 
+ *    вивести перелік наявних груп
+ *    * неактивні (видалені) групи виділяти (наприклад, сірим фоном)
+ * 2) до кожної з груп у переліку додати кнопки
+ *    "редагувати" та "видалити"
+ * 3) натиснення кнопки редагування групи автоматично заповнює
+ *    форму, призначену для нової групи, поточними даними.
+ *    Назва кнопки "додати" змінюється на "зберегти"
+ *    Реалізувати роботу форми.
+ * 4) натиснення кнопки видалення запитує підтвердження дії
+ *    та переводить групу до видалених, що відбивається на 
+ *    її вигляді у переліку.
+ */

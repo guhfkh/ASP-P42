@@ -1,0 +1,140 @@
+﻿@model ASP_P42.Data.Entities.ProductGroup
+
+@{
+    ViewData["Title"] = "Edit product group";
+
+    List<ASP_P42.Data.Entities.ProductGroup> groups =
+        ViewBag.Groups;
+}
+
+<div class="text-center">
+    <h1 class="display-4">Edit product group</h1>
+</div>
+
+<form asp-action="EditGroup"
+      method="post"
+      enctype="multipart/form-data">
+
+    <input type="hidden"
+           name="Id"
+           value="@Model.Id" />
+
+    <div class="input-group mb-3">
+        <label class="input-group-text" for="group-parent">
+            Батьківська група
+        </label>
+
+        <select class="form-select"
+                id="group-parent"
+                name="ParentId">
+
+            <option value="">
+                Вищій рівень
+            </option>
+
+            @foreach (var group in groups)
+            {
+                if (group.Id == Model.Id)
+                {
+                    continue;
+                }
+
+                <option value="@group.Id"
+                        selected="@(group.Id == Model.ParentId)">
+                    @group.Name
+                </option>
+            }
+        </select>
+    </div>
+
+    <div class="input-group mb-3">
+        <span class="input-group-text">
+            Назва
+        </span>
+
+        <input type="text"
+               class="form-control"
+               name="Name"
+               value="@Model.Name"
+               required />
+    </div>
+
+    <div class="input-group mb-3">
+        <span class="input-group-text">
+            Опис
+        </span>
+
+        <textarea class="form-control"
+                  name="Description"
+                  required>@Model.Description</textarea>
+    </div>
+
+    <div class="input-group mb-3">
+        <span class="input-group-text">
+            Slug
+        </span>
+
+        <input type="text"
+               class="form-control"
+               name="Slug"
+               value="@Model.Slug"
+               required />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">
+            Поточне зображення
+        </label>
+
+        @if (!string.IsNullOrEmpty(Model.ImageUrl))
+        {
+            <div class="mb-2">
+                <img src="@Model.ImageUrl"
+                     alt="@Model.Name"
+                     style="max-width: 200px; max-height: 200px;" />
+            </div>
+        }
+
+        <input type="file"
+               class="form-control"
+               name="Image" />
+    </div>
+
+    <div class="input-group mb-3">
+        <div class="input-group-text">
+            <input class="form-check-input mt-0"
+                   type="checkbox"
+                   value="1"
+                   name="IsHidden"
+                   id="group-hidden"
+                   @(Model.IsHidden != 0 ? "checked" : "") />
+        </div>
+
+        <label for="group-hidden"
+               class="form-control">
+            Прихована група
+        </label>
+    </div>
+
+    <div class="input-group mb-3">
+        <span class="input-group-text">
+            Порядок
+        </span>
+
+        <input type="number"
+               class="form-control"
+               name="OrderInPrice"
+               value="@Model.OrderInPrice"
+               step="1" />
+    </div>
+
+    <button type="submit"
+            class="btn btn-primary">
+        Save
+    </button>
+
+    <a asp-action="Group"
+       class="btn btn-secondary">
+        Cancel
+    </a>
+</form>

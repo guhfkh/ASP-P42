@@ -1,0 +1,178 @@
+.group-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 25px 60px;
+}
+
+.group-page-title {
+    margin-bottom: 40px;
+}
+
+    .group-page-title h1 {
+        margin: 0;
+        font-weight: 600;
+    }
+
+.group-list-title {
+    margin: 0 0 20px;
+    font-size: 1.7rem;
+    font-weight: 600;
+}
+
+.group-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 45px;
+}
+
+.group-item {
+    padding: 22px 24px;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    background-color: #ffffff;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+    .group-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+    }
+
+    .group-item.deleted {
+        background-color: #f1f1f1;
+        border-color: #bfc3c7;
+        color: #6c757d;
+        box-shadow: none;
+    }
+
+        .group-item.deleted:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+.group-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 30px;
+}
+
+.group-info {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.group-name {
+    margin: 0 0 10px;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #212529;
+}
+
+.group-item.deleted .group-name {
+    color: #6c757d;
+}
+
+.group-description {
+    margin: 0 0 12px;
+    color: #495057;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.group-item.deleted .group-description {
+    color: #6c757d;
+}
+
+.group-meta {
+    display: block;
+    color: #868e96;
+    font-size: 0.85rem;
+}
+
+.group-actions {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 10px;
+    white-space: nowrap;
+}
+
+    .group-actions form {
+        margin: 0;
+    }
+
+    .group-actions .btn {
+        min-width: 85px;
+        font-weight: 500;
+    }
+
+    .group-actions .btn-warning {
+        color: #212529;
+    }
+
+.group-form {
+    padding: 30px;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    background-color: #ffffff;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+}
+
+    .group-form .input-group {
+        box-shadow: none;
+    }
+
+    .group-form .form-control,
+    .group-form .form-select {
+        min-height: 42px;
+    }
+
+    .group-form textarea.form-control {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .group-form input[type="file"] {
+        min-height: 42px;
+    }
+
+    .group-form .btn-primary {
+        min-width: 100px;
+        margin-top: 5px;
+        font-weight: 500;
+    }
+
+@media (max-width: 768px) {
+    .group-page {
+        padding: 25px 15px 40px;
+    }
+
+    .group-page-title {
+        margin-bottom: 30px;
+    }
+
+        .group-page-title h1 {
+            font-size: 2rem;
+        }
+
+    .group-content {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .group-actions {
+        width: 100%;
+    }
+
+        .group-actions .btn {
+            flex: 1;
+        }
+
+    .group-form {
+        padding: 20px;
+    }
+}
